@@ -1,5 +1,5 @@
 /**
- * SHASHIKALAA POWERTECK - Solar & Energy Solutions
+ * SHASHIKALA POWER TECH - Solar & Energy Solutions
  * SolarSquare-Inspired Web Experience Engine
  */
 
@@ -74,14 +74,31 @@ function initMobileMenu() {
 }
 
 /**
- * SolarSquare-Style Interactive Solar Savings Estimator
+ * SolarSquare-Style Interactive Solar Savings Estimator with Comprehensive Financial & Energy Metrics
  */
 function initSolarEstimator() {
   const slider = document.getElementById('billSlider');
   const billDisplay = document.getElementById('billDisplay');
+  const presetBtns = document.querySelectorAll('.preset-pill');
+
+  // Metric displays
   const systemSizeVal = document.getElementById('calcSystemSize');
   const roofAreaVal = document.getElementById('calcRoofArea');
-  const generationVal = document.getElementById('calcGeneration');
+  const electricitySavedVal = document.getElementById('calcElectricitySaved');
+  const moneySavedVal = document.getElementById('calcMoneySaved');
+  const annualSavedVal = document.getElementById('calcAnnualSavings');
+  const lifetimeSavedVal = document.getElementById('calcLifetimeSavings');
+
+  // Before vs After comparison bar
+  const barCurrentBill = document.getElementById('barCurrentBill');
+  const barNewBill = document.getElementById('barNewBill');
+  const barNewFill = document.getElementById('barNewFill');
+  const barSavedAmount = document.getElementById('barSavedAmount');
+
+  // Eco impact
+  const calcCo2Saved = document.getElementById('calcCo2Saved');
+  const calcTreesPlanted = document.getElementById('calcTreesPlanted');
+
   const estimatorBtn = document.getElementById('estimatorQuoteBtn');
   const reqTextarea = document.getElementById('requirementDetails');
 
@@ -89,22 +106,80 @@ function initSolarEstimator() {
 
   function updateCalculations() {
     const bill = parseInt(slider.value, 10);
-    billDisplay.textContent = `₹${bill.toLocaleString('en-IN')}`;
+    const min = parseInt(slider.min, 10) || 1500;
+    const max = parseInt(slider.max, 10) || 15000;
+    const percent = Math.min(100, Math.max(0, ((bill - min) / (max - min)) * 100));
 
-    // Practical Indian solar engineering formula:
-    // Avg tariff ~ ₹8.5 - ₹9/unit in Maharashtra. 1 kW produces ~120-130 units/month.
-    // 1 kW rooftop solar offsets approx. ₹1,000 - ₹1,200 of monthly bill.
+    // Dynamic slider track fill
+    slider.style.setProperty('--slider-progress', `${percent}%`);
+
+    if (billDisplay) {
+      billDisplay.textContent = `₹${bill.toLocaleString('en-IN')}`;
+    }
+
+    // Practical Maharashtra / Nagpur solar engineering metrics:
+    // Avg domestic MSEDCL tariff ~ ₹8.5 - ₹9.5/unit.
+    // 1 kW rooftop solar yields ~125-130 units/month in Nagpur's high solar insolation.
+    // System capacity recommended:
     let kw = Math.round((bill / 1150) * 10) / 10;
     if (kw < 2) kw = 2.0;
     if (kw > 25) kw = 25.0;
 
-    const roofSqFt = Math.round(kw * 95);
     const monthlyUnits = Math.round(kw * 125);
+    const roofSqFt = Math.round(kw * 95);
 
-    systemSizeVal.textContent = `${kw.toFixed(1)} kW`;
-    roofAreaVal.textContent = `${roofSqFt} sq.ft`;
-    generationVal.textContent = `${monthlyUnits} units`;
+    // Grid-tied solar slashes 85-90% of electricity bill (retaining minimal fixed meter charges):
+    const newBill = Math.max(300, Math.round(bill * 0.11));
+    const monthlySavings = Math.max(0, bill - newBill);
+    const annualSavings = monthlySavings * 12;
+    const lifetimeSavingsLakhs = ((annualSavings * 25) / 100000).toFixed(1);
+
+    // Eco impact: ~0.82 kg CO2 avoided per kWh in Indian grid
+    const co2Tons = ((monthlyUnits * 12 * 0.82) / 1000).toFixed(1);
+    const trees = Math.round(parseFloat(co2Tons) * 16);
+
+    // Update 4-Metric Grid
+    if (systemSizeVal) systemSizeVal.textContent = `${kw.toFixed(1)} kW`;
+    if (roofAreaVal) roofAreaVal.textContent = `${roofSqFt} sq.ft`;
+    if (electricitySavedVal) electricitySavedVal.textContent = `${monthlyUnits.toLocaleString('en-IN')} kWh`;
+    if (moneySavedVal) moneySavedVal.textContent = `₹${monthlySavings.toLocaleString('en-IN')}/mo`;
+    if (annualSavedVal) annualSavedVal.textContent = `₹${annualSavings.toLocaleString('en-IN')}/yr`;
+    if (lifetimeSavedVal) lifetimeSavedVal.textContent = `₹${lifetimeSavingsLakhs} Lakhs`;
+
+    // Update Comparison Visual Bar
+    if (barCurrentBill) barCurrentBill.textContent = `₹${bill.toLocaleString('en-IN')}`;
+    if (barNewBill) barNewBill.textContent = `₹${newBill.toLocaleString('en-IN')}`;
+    if (barSavedAmount) barSavedAmount.textContent = `Save ₹${monthlySavings.toLocaleString('en-IN')}/mo (~89% OFF)`;
+    if (barNewFill) {
+      const newBillPercent = Math.max(10, Math.round((newBill / bill) * 100));
+      barNewFill.style.width = `${newBillPercent}%`;
+    }
+
+    // Update Eco Impact
+    if (calcCo2Saved) calcCo2Saved.textContent = `${co2Tons} Tons`;
+    if (calcTreesPlanted) calcTreesPlanted.textContent = `${trees} Trees`;
+
+    // Sync Preset Pills
+    presetBtns.forEach(btn => {
+      const pVal = parseInt(btn.dataset.val, 10);
+      if (pVal === bill) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
   }
+
+  // Preset pill click listeners
+  presetBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const val = parseInt(btn.dataset.val, 10);
+      if (!isNaN(val)) {
+        slider.value = val;
+        updateCalculations();
+      }
+    });
+  });
 
   slider.addEventListener('input', updateCalculations);
   updateCalculations();
@@ -112,11 +187,34 @@ function initSolarEstimator() {
   if (estimatorBtn) {
     estimatorBtn.addEventListener('click', () => {
       const bill = slider.value;
-      const kw = systemSizeVal.textContent;
+      const kw = systemSizeVal ? systemSizeVal.textContent : '3.5 kW';
+      const monthlySaved = moneySavedVal ? moneySavedVal.textContent : '';
+      const unitsSaved = electricitySavedVal ? electricitySavedVal.textContent : '';
       const quoteSection = document.getElementById('quote');
 
       if (reqTextarea) {
-        reqTextarea.value = `Monthly electricity bill is ₹${parseInt(bill, 10).toLocaleString('en-IN')}. Interested in a ~${kw} solar system with net metering.`;
+        reqTextarea.value = `Monthly electricity bill: ₹${parseInt(bill, 10).toLocaleString('en-IN')}. Looking for a ~${kw} solar setup to save approx. ${unitsSaved} (${monthlySaved}) with net metering.`;
+      }
+
+      // Pre-select matching monthly bill bracket in contact form
+      const billNum = parseInt(bill, 10);
+      let targetBillVal = '₹2500 - ₹4000';
+      if (billNum < 1500) {
+        targetBillVal = 'Less than ₹1500';
+      } else if (billNum <= 2500) {
+        targetBillVal = '₹1500 - ₹2500';
+      } else if (billNum <= 4000) {
+        targetBillVal = '₹2500 - ₹4000';
+      } else if (billNum <= 8000) {
+        targetBillVal = '₹4000 - ₹8000';
+      } else {
+        targetBillVal = 'More than ₹8000';
+      }
+
+      const matchingRadio = document.querySelector(`input[name="monthlyBill"][value="${targetBillVal}"]`);
+      if (matchingRadio) {
+        matchingRadio.checked = true;
+        matchingRadio.dispatchEvent(new Event('change'));
       }
 
       if (quoteSection) {
@@ -206,8 +304,14 @@ function initLeadForm() {
 
   const nameInput = document.getElementById('fullName');
   const phoneInput = document.getElementById('phoneNumber');
+  const billRadioGroup = document.getElementById('billRadioGroup');
+  const billRadios = form.querySelectorAll('input[name="monthlyBill"]');
+  const billError = document.getElementById('billError');
   const propertySelect = document.getElementById('propertyType');
   const requirementInput = document.getElementById('requirementDetails');
+
+  // Sync initial selection state if pre-checked
+  updateBillSelectionStyles();
 
   [nameInput, phoneInput].forEach(input => {
     if (!input) return;
@@ -217,6 +321,27 @@ function initLeadForm() {
       }
     });
   });
+
+  // Radio button change listener
+  billRadios.forEach(radio => {
+    radio.addEventListener('change', () => {
+      if (billRadioGroup) billRadioGroup.classList.remove('error');
+      if (billError) billError.style.display = 'none';
+      updateBillSelectionStyles();
+    });
+  });
+
+  function updateBillSelectionStyles() {
+    const items = form.querySelectorAll('.bill-radio-item');
+    items.forEach(item => {
+      const radio = item.querySelector('input[type="radio"]');
+      if (radio && radio.checked) {
+        item.classList.add('selected');
+      } else {
+        item.classList.remove('selected');
+      }
+    });
+  }
 
   function validateField(input) {
     if (!input) return false;
@@ -245,6 +370,16 @@ function initLeadForm() {
 
     const isNameValid = validateField(nameInput);
     const isPhoneValid = validateField(phoneInput);
+    const selectedBillInput = form.querySelector('input[name="monthlyBill"]:checked');
+    const isBillValid = !!selectedBillInput;
+
+    if (!isBillValid) {
+      if (billRadioGroup) billRadioGroup.classList.add('error');
+      if (billError) billError.style.display = 'block';
+    } else {
+      if (billRadioGroup) billRadioGroup.classList.remove('error');
+      if (billError) billError.style.display = 'none';
+    }
 
     if (!isNameValid) {
       nameInput.focus();
@@ -252,6 +387,12 @@ function initLeadForm() {
     }
     if (!isPhoneValid) {
       phoneInput.focus();
+      return;
+    }
+    if (!isBillValid) {
+      if (billRadioGroup) {
+        billRadioGroup.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
       return;
     }
 
@@ -268,10 +409,12 @@ function initLeadForm() {
     }
 
     const userName = encodeURIComponent(nameInput.value.trim());
+    const userPhone = encodeURIComponent(phoneInput.value.trim());
+    const selectedBill = encodeURIComponent(selectedBillInput ? selectedBillInput.value : 'Not specified');
     const propType = encodeURIComponent(propertySelect ? propertySelect.value : 'Residential');
     const reqText = encodeURIComponent(requirementInput ? requirementInput.value.trim() : '');
 
-    let waMessage = `Hello Nitin ji, I submitted a solar enquiry on Shashikalaa Powerteck:%0A• Name: ${userName}%0A• Property: ${propType}`;
+    let waMessage = `Hello Shashikala Power Tech Team, I submitted a solar enquiry on your website:%0A• Name: ${userName}%0A• Phone: ${userPhone}%0A• Monthly Bill: ${selectedBill}%0A• Property: ${propType}`;
     if (reqText) {
       waMessage += `%0A• Requirement: ${reqText}`;
     }
