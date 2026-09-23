@@ -128,9 +128,9 @@ function initSolarEstimator() {
     const monthlyUnits = Math.round(kw * 125);
     const roofSqFt = Math.round(kw * 95);
 
-    // Grid-tied solar slashes 85-90% of electricity bill (retaining minimal fixed meter charges):
-    const newBill = Math.max(300, Math.round(bill * 0.11));
-    const monthlySavings = Math.max(0, bill - newBill);
+    // Grid-tied solar slashes the electricity bill down to ₹0 (net-metering offsets bill to ₹0):
+    const newBill = 0;
+    const monthlySavings = bill;
     const annualSavings = monthlySavings * 12;
     const lifetimeSavingsLakhs = ((annualSavings * 25) / 100000).toFixed(1);
 
@@ -148,11 +148,10 @@ function initSolarEstimator() {
 
     // Update Comparison Visual Bar
     if (barCurrentBill) barCurrentBill.textContent = `₹${bill.toLocaleString('en-IN')}`;
-    if (barNewBill) barNewBill.textContent = `₹${newBill.toLocaleString('en-IN')}`;
-    if (barSavedAmount) barSavedAmount.textContent = `Save ₹${monthlySavings.toLocaleString('en-IN')}/mo (~89% OFF)`;
+    if (barNewBill) barNewBill.textContent = `₹0`;
+    if (barSavedAmount) barSavedAmount.textContent = `Save ₹${monthlySavings.toLocaleString('en-IN')}/mo (100% Slashed · ₹0 Bill)`;
     if (barNewFill) {
-      const newBillPercent = Math.max(10, Math.round((newBill / bill) * 100));
-      barNewFill.style.width = `${newBillPercent}%`;
+      barNewFill.style.width = `100%`;
     }
 
     // Update Eco Impact
